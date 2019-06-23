@@ -7,12 +7,12 @@ from telegram.ext import Dispatcher, MessageHandler, Filters, CommandHandler, Ca
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 # paper scissors rock
-hands = ['rock', 'paper', 'scissors']
+hands = ['r', 'p', 's']
 
 emoji = {
-    'rock': '👊',
-    'paper': '✋',
-    'scissors': '✌️'  
+    'r': '👊',
+    'p': '✋',
+    's': '✌️'  
 }
 
 # load config
@@ -34,10 +34,15 @@ def webhook_handler():
     return 'ok'
 
 def start(bot, update):
+    print('start')
     player_hands_button, bot_hands_str = init_hands()
     # bot_hands_str = 我的牌\n👊👊👊👊👊
     start_str = '剪刀石頭布!\n'+ bot_hands_str +'\n你的牌'
-    update.message.reply_text(start_str, reply_markup = InlineKeyboardMarkup([player_hands_button]))
+    print(player_hands_button)
+    try:
+        update.message.reply_text(start_str, reply_markup = InlineKeyboardMarkup([player_hands_button]))
+    except Exception as e:
+        print(e)
 
 def play(bot, update):
     try:
@@ -57,11 +62,15 @@ def play(bot, update):
         print(e)
 
 def init_hands():
-    bot_hands = random.choices(hands, k=5)
-    player_hands = random.choices(hands, k=5)
+    try:
+        bot_hands = random.choices(hands, k=5)
+        player_hands = random.choices(hands, k=5)
+    except Exception as e:
+        print(e)
     return hands_to_button(player_hands, bot_hands, 0)
 
 def parse_callback(data):
+    print('parse callback')
     # data = idx|玩家的牌,分數|機器人的牌
     # data = 0|rock,rock,scissors,paper,rock,0|rock,rock,scissors,paper,paper
     parse_data = data.split('|')
@@ -102,18 +111,21 @@ def judge(mine, yours):
         return '我輸了'
 
 def hands_to_button(player_hands, bot_hands, score):
-    bot_str = ','.join(bot_hands)
-    player_str = ','.join(player_hands) + ',' + str(score)
-    # string解析成button
-    player_button_list = []
-    for idx, hand in enumerate(player_hands):
-        callback_data = str(idx) + '|' + player_str + '|' + bot_str
-        player_button_list.append(InlineKeyboardButton(emoji[hand], callback_data=callback_data))
-    
-    bot_display_str = '我的牌\n'
-    for hand in bot_hands:
-        bot_display_str += emoji[hand] + ' '
-
+    try:
+        bot_str = ','.join(bot_hands)
+        player_str = ','.join(player_hands) + ',' + str(score)
+        # string解析成button
+        player_button_list = []
+        for idx, hand in enumerate(player_hands):
+            callback_data = str(idx) + '|' + player_str + '|' + bot_str
+            print(len(callback_data))
+            player_button_list.append(InlineKeyboardButton(emoji[hand], callback_data=callback_data))
+        
+        bot_display_str = '我的牌\n'
+        for hand in bot_hands:
+            bot_display_str += emoji[hand] + ' '
+    except Exception as e:
+        print(e)
     return player_button_list, bot_display_str
 
 # new dispatcher
